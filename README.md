@@ -58,7 +58,7 @@ Select commit [1/2/3/e(q)dit/(q)uit]: 1
 | AI changelog generation | 3/month | ∞ |
 | Conventional Commits | ✅ | ✅ |
 | Emoji commits | ✅ | ✅ |
-| Multi-language (6+ languages) | ✅ | ✅ |
+| Multi-language (EN, RU) | ✅ | ✅ |
 | Git hook integration | ✅ | ✅ |
 | GitHub Action | ✅ | ✅ |
 | No watermark | ❌ | ✅ |
