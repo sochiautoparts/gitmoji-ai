@@ -35,7 +35,7 @@ $ gmai commit
 💡 Commit Suggestions
 ┏━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┓
 ┃ # ┃ Message                                 ┃ Confidence ┃
-┡───╇──────────────────────────────────────────╇────────────┩
+┡───╇──────────────────────────────────────────╇────────────┥
 │ 1 │ feat(auth): add JWT token validation     │ 95%        │
 │ 2 │ ✨ add JWT token validation to auth      │ 90%        │
 │ 3 │ feat(auth): implement JWT validation     │ 85%        │
@@ -251,7 +251,6 @@ jobs:
 Purchase directly in Telegram — pay with Stars, get your license key in seconds!
 
 - **Bot:** 👉 [@allstarspay_bot](https://t.me/allstarspay_bot)
-- **Mini App:** 👉 [StarsPay Mini App](https://sochiautoparts.github.io/stars-pay-bot/)
 
 | Plan | Price | Best for |
 |------|-------|----------|
@@ -266,7 +265,6 @@ Purchase directly in Telegram — pay with Stars, get your license key in second
 ```bash
 # 1. Open @allstarspay_bot in Telegram and pay with Stars
 #    👉 https://t.me/allstarspay_bot
-#    Or use the Mini App: https://sochiautoparts.github.io/stars-pay-bot/
 
 # 2. Copy your license key (format: SP-GMA-xxxxxx)
 
@@ -281,19 +279,43 @@ gmai pro activate YOUR-LICENSE-KEY
 gmai pro status    # Check your license
 ```
 
+### 🔐 License Verification (No API Server Needed!)
+
+GitMoji AI verifies Pro licenses **without requiring an API server**. The verification works in two tiers:
+
+#### 1️⃣ Primary: Public `licenses.json` on GitHub
+
+The tool fetches a public JSON file from GitHub to verify licenses — **no authentication, no rate limits, no API server needed**:
+
+- **URL:** `https://raw.githubusercontent.com/sochiautoparts/stars-pay-bot/main/data/licenses.json`
+- The JSON file contains license entries with a `key_hash` field (SHA-256 truncated to 16 hex characters)
+- Verification: compute `hashlib.sha256(key.encode()).hexdigest()[:16]` and match against `key_hash`
+- Also checks `active` field and `expires_at` (0 = lifetime)
+
+#### 2️⃣ Fallback: REST API (if `STARSPAY_API_URL` is set)
+
+If the JSON method doesn't validate and `STARSPAY_API_URL` is configured, the tool falls back to a REST API call:
+
+- **POST** to `{STARSPAY_API_URL}/api/v1/verify`
+- **Header:** `X-API-Key: {STARSPAY_API_KEY}`
+- **Body:** `{"key": "<license_key>"}`
+
+The `is_pro()` function caches verification results for 1 hour in memory and also saves to local SQLite for offline use.
+
 ### Environment Variables for CI/CD
 
-For automated environments (GitHub Actions, Docker, etc.), you can configure StarsPay license checks via environment variables:
+For automated environments (GitHub Actions, Docker, etc.):
 
 ```bash
-STARSPAY_API_URL=https://your-starspay-instance.onrender.com  # StarsPay API URL (empty = no check)
-STARSPAY_API_KEY=your-api-key                                 # StarsPay API key
-LICENSE_KEY=SP-GMA-xxxxxxxx                                   # Your license key
+LICENSE_KEY=SP-GMA-xxxxxxxx                                   # Your license key (required for Pro)
+STARSPAY_API_URL=                                              # Optional: StarsPay API URL (empty = JSON-only verification)
+STARSPAY_API_KEY=                                              # Optional: StarsPay API key (only if using API fallback)
 ```
 
-- If `STARSPAY_API_URL` is not set or empty, the license check is skipped and basic (free) usage is allowed.
-- If configured, the tool will POST to `{STARSPAY_API_URL}/api/v1/verify` with header `X-API-Key` and body `{"key": "..."}` to verify the license.
-- Falls back to local cache if the API is unreachable.
+- **LICENSE_KEY** — Your Pro license key. If set, the tool verifies it via the public JSON file (primary) or REST API (fallback).
+- **STARSPAY_API_URL** — Optional. If set, the REST API is used as a fallback when JSON verification doesn't find the key.
+- **STARSPAY_API_KEY** — Optional. API key for the REST API (only needed if `STARSPAY_API_URL` is set).
+- If only `LICENSE_KEY` is set, verification uses the public GitHub JSON — **no API server required!**
 
 ---
 
@@ -309,12 +331,12 @@ GMAI_OPENAI_API_KEY=sk-your-key-here
 GMAI_DEFAULT_LANGUAGE=en          # Default commit language
 GMAI_COMMIT_STYLE=conventional    # Default commit style
 GMAI_OPENAI_MODEL=gpt-4o-mini    # AI model
-GMAI_PRO_LICENSE_KEY=            # Pro license key
+GMAI_PRO_LICENSE_KEY=             # Pro license key
 
-# StarsPay integration (for CI/CD)
-STARSPAY_API_URL=                # StarsPay API URL (empty = no check)
-STARSPAY_API_KEY=                # StarsPay API key
-LICENSE_KEY=                     # License key for Pro features
+# StarsPay license verification
+LICENSE_KEY=                      # License key for Pro features (primary: verified via public GitHub JSON)
+STARSPAY_API_URL=                 # Optional: StarsPay API URL (empty = JSON-only verification)
+STARSPAY_API_KEY=                 # Optional: StarsPay API key
 ```
 
 ### Git Hook
@@ -340,7 +362,7 @@ gitmoji-ai/
 │   ├── git_ops.py      # Git operations (diff, commit)
 │   ├── changelog.py    # Changelog generator
 │   ├── config.py       # Configuration management
-│   ├── usage.py        # Usage tracking & StarsPay license validation
+│   ├── usage.py        # Usage tracking & license validation (JSON + API)
 │   └── suggest.py      # Quick suggest (for hooks)
 ├── action/
 │   └── action.yml      # GitHub Action
