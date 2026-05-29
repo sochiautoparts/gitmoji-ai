@@ -4,6 +4,7 @@ CLI interface — main entry point using Typer + Rich
 
 import asyncio
 import sys
+from pathlib import Path
 from typing import Optional
 
 import typer
