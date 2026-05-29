@@ -43,14 +43,18 @@ description: Never write a bad commit message again. AI-powered commit messages 
 </pre>
 </div>
 
-<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; margin-bottom: 50px;">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 25px; margin-bottom: 50px;">
 <div style="background: #f6f8fa; padding: 25px; border-radius: 12px;">
 <h3>💬 AI Commits</h3>
-<p>3 smart suggestions per diff. Conventional commits, emoji style, or plain. 6+ languages.</p>
+<p>3 smart suggestions per diff. 5 commit styles. 7 languages with native prompts.</p>
 </div>
 <div style="background: #f6f8fa; padding: 25px; border-radius: 12px;">
 <h3>📝 Changelog</h3>
-<p>Auto-generate beautiful changelogs grouped by type. Keep a Changelog or Angular format.</p>
+<p>Auto-generate beautiful changelogs grouped by type. 7 languages supported. Keep a Changelog or Angular format.</p>
+</div>
+<div style="background: #f6f8fa; padding: 25px; border-radius: 12px;">
+<h3>👥 Team Features</h3>
+<p>Shared commit conventions via <code>.gitmoji-ai-team.yml</code>. Enforce types, scopes, and subject length across your team.</p>
 </div>
 <div style="background: #f6f8fa; padding: 25px; border-radius: 12px;">
 <h3>🔐 License Verification</h3>
@@ -77,7 +81,8 @@ gmai init</code></pre>
 <div style="background: #f6f8fa; padding: 25px; border-radius: 12px; margin-bottom: 20px;">
 <h3>3️⃣ Use</h3>
 <pre style="background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 8px; overflow-x: auto;"><code>gmai commit --stage     # AI commit
-gmai changelog -v v1.0   # AI changelog</code></pre>
+gmai changelog -v v1.0   # AI changelog
+gmai team init           # Team config</code></pre>
 </div>
 
 <div style="background: #f6f8fa; padding: 25px; border-radius: 12px; margin-bottom: 40px;">
@@ -85,8 +90,64 @@ gmai changelog -v v1.0   # AI changelog</code></pre>
 <pre style="background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 8px; overflow-x: auto;"><code>- uses: sochiautoparts/gitmoji-ai@v1
   with:
     openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+    license-key: ${{ secrets.LICENSE_KEY }}
     generate-changelog: true
     version: v1.2.0</code></pre>
+</div>
+
+<div style="margin-bottom: 50px;">
+<h2 style="text-align: center;">🎨 Commit Styles</h2>
+<table style="margin: 0 auto; border-collapse: collapse; font-size: 1.05em; width: 100%; max-width: 700px;">
+<tr style="border-bottom: 2px solid #ddd;">
+<th style="padding: 12px; text-align: left;">Style</th>
+<th style="padding: 12px; text-align: left;">Example</th>
+<th style="padding: 12px;">Free</th>
+<th style="padding: 12px;">Pro</th>
+</tr>
+<tr style="border-bottom: 1px solid #eee;">
+<td style="padding: 10px;"><code>conventional</code></td>
+<td style="padding: 10px;">feat(auth): add JWT validation</td>
+<td style="padding: 10px; text-align: center;">✅</td>
+<td style="padding: 10px; text-align: center;">✅</td>
+</tr>
+<tr style="border-bottom: 1px solid #eee;">
+<td style="padding: 10px;"><code>emoji</code></td>
+<td style="padding: 10px;">✨ add JWT validation</td>
+<td style="padding: 10px; text-align: center;">✅</td>
+<td style="padding: 10px; text-align: center;">✅</td>
+</tr>
+<tr style="border-bottom: 1px solid #eee;">
+<td style="padding: 10px;"><code>plain</code></td>
+<td style="padding: 10px;">Add JWT validation</td>
+<td style="padding: 10px; text-align: center;">✅</td>
+<td style="padding: 10px; text-align: center;">✅</td>
+</tr>
+<tr style="border-bottom: 1px solid #eee;">
+<td style="padding: 10px;"><code>semantic-release</code></td>
+<td style="padding: 10px;">feat(api)!: change auth response</td>
+<td style="padding: 10px; text-align: center;">❌</td>
+<td style="padding: 10px; text-align: center; color: #2ea44f; font-weight: bold;">✅</td>
+</tr>
+<tr>
+<td style="padding: 10px;"><code>gitmoji-dict</code></td>
+<td style="padding: 10px;">🌐 add Spanish translation</td>
+<td style="padding: 10px; text-align: center;">❌</td>
+<td style="padding: 10px; text-align: center; color: #2ea44f; font-weight: bold;">✅</td>
+</tr>
+</table>
+</div>
+
+<div style="margin-bottom: 50px;">
+<h2 style="text-align: center;">🌍 7 Languages with Native Prompts</h2>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-top: 20px;">
+<div style="background: #f6f8fa; padding: 15px; border-radius: 8px; text-align: center;">🇬🇧 English<br><small>feat(auth): add login</small></div>
+<div style="background: #f6f8fa; padding: 15px; border-radius: 8px; text-align: center;">🇷🇺 Русский<br><small>feat(auth): добавить логин</small></div>
+<div style="background: #f6f8fa; padding: 15px; border-radius: 8px; text-align: center;">🇪🇸 Español<br><small>feat(auth): añadir login</small></div>
+<div style="background: #f6f8fa; padding: 15px; border-radius: 8px; text-align: center;">🇩🇪 Deutsch<br><small>feat(auth): login hinzufügen</small></div>
+<div style="background: #f6f8fa; padding: 15px; border-radius: 8px; text-align: center;">🇫🇷 Français<br><small>feat(auth): ajouter le login</small></div>
+<div style="background: #f6f8fa; padding: 15px; border-radius: 8px; text-align: center;">🇯🇵 日本語<br><small>feat(auth): ログインを追加</small></div>
+<div style="background: #f6f8fa; padding: 15px; border-radius: 8px; text-align: center;">🇨🇳 中文<br><small>feat(auth): 添加登录</small></div>
+</div>
 </div>
 
 <div style="text-align: center; margin-bottom: 40px;">
@@ -111,13 +172,31 @@ gmai changelog -v v1.0   # AI changelog</code></pre>
 <td style="padding: 12px; color: #2ea44f;">Unlimited</td>
 </tr>
 <tr style="border-bottom: 1px solid #eee;">
+<td style="padding: 12px; text-align: left;">7 languages</td>
+<td style="padding: 12px;">✅</td>
+<td style="padding: 12px; color: #2ea44f;">✅</td>
+<td style="padding: 12px; color: #2ea44f;">✅</td>
+</tr>
+<tr style="border-bottom: 1px solid #eee;">
+<td style="padding: 12px; text-align: left;">5 commit styles</td>
+<td style="padding: 12px;">3 styles</td>
+<td style="padding: 12px; color: #2ea44f;">5 styles</td>
+<td style="padding: 12px; color: #2ea44f;">5 styles</td>
+</tr>
+<tr style="border-bottom: 1px solid #eee;">
 <td style="padding: 12px; text-align: left;">No watermark</td>
 <td style="padding: 12px;">❌</td>
 <td style="padding: 12px; color: #2ea44f;">✅</td>
 <td style="padding: 12px; color: #2ea44f;">✅</td>
 </tr>
 <tr style="border-bottom: 1px solid #eee;">
-<td style="padding: 12px; text-align: left;">Custom styles</td>
+<td style="padding: 12px; text-align: left;">Team features</td>
+<td style="padding: 12px;">❌</td>
+<td style="padding: 12px; color: #2ea44f;">✅</td>
+<td style="padding: 12px; color: #2ea44f;">✅</td>
+</tr>
+<tr style="border-bottom: 1px solid #eee;">
+<td style="padding: 12px; text-align: left;">Priority support</td>
 <td style="padding: 12px;">❌</td>
 <td style="padding: 12px; color: #2ea44f;">✅</td>
 <td style="padding: 12px; color: #2ea44f;">✅</td>

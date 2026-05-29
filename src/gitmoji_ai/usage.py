@@ -106,7 +106,7 @@ def check_limit(action: str) -> tuple[bool, int]:
     settings = get_settings()
 
     # Pro users have no limits
-    if settings.is_pro or is_pro():
+    if is_pro():
         return True, 999
 
     used = get_monthly_usage(action)
@@ -406,6 +406,6 @@ def get_usage_stats() -> dict:
         "changelogs_this_month": get_monthly_usage("changelog"),
         "commit_limit": settings.free_commits_per_month,
         "changelog_limit": settings.free_changelog_per_month,
-        "is_pro": settings.is_pro or is_pro(),
+        "is_pro": is_pro(),
         "license_status": check_license_with_api(),
     }

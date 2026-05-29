@@ -54,6 +54,82 @@ SYSTEM_PROMPT_CHANGELOG_RU = """Ты — эксперт по написанию 
 Выведи полный раздел changelog в формате Markdown.
 """
 
+
+SYSTEM_PROMPT_CHANGELOG_ES = """Eres un experto en escribir listas de cambios bonitas y bien organizadas.
+
+Reglas:
+1. Agrupa los cambios por tipo: Nuevas funciones, Correcciones, Mejoras, Documentación, etc.
+2. Escribe en lenguaje amigable para el usuario (sin jerga técnica)
+3. Cada entrada debe comenzar con un verbo en modo imperativo
+4. Incluye los cambios importantes de forma destacada
+5. Sé conciso pero informativo
+6. Formato Markdown
+
+Genera una sección completa de changelog en formato Markdown.
+"""
+
+SYSTEM_PROMPT_CHANGELOG_DE = """Du bist ein Experte für das Schreiben schöner, gut organisierter Changelogs.
+
+Regeln:
+1. Gruppiere Änderungen nach Typ: Neue Funktionen, Fehlerbehebungen, Verbesserungen, Dokumentation usw.
+2. Schreibe in benutzerfreundlicher Sprache (kein Fachjargon)
+3. Jeder Eintrag sollte mit einem Verb im Imperativ beginnen
+4. Brechende Änderungen hervorheben
+5. Sei prägnant aber informativ
+6. Format als Markdown
+
+Erstelle einen vollständigen Changelog-Abschnitt im Markdown-Format.
+"""
+
+SYSTEM_PROMPT_CHANGELOG_FR = """Vous êtes un expert en rédaction de changelogs beaux et bien organisés.
+
+Règles :
+1. Groupez les changements par type : Nouvelles fonctionnalités, Corrections, Améliorations, Documentation, etc.
+2. Écrivez dans un langage convivial (sans jargon technique)
+3. Chaque entrée doit commencer par un verbe à l'impératif
+4. Incluez les changements cassants de manière visible
+5. Soyez concis mais informatif
+6. Format Markdown
+
+Générez une section de changelog complète au format Markdown.
+"""
+
+SYSTEM_PROMPT_CHANGELOG_JA = """あなたは美しく整理されたチェンジログを書くエキスパートです。
+
+ルール:
+1. 変更をタイプ別にグループ化：新機能、バグ修正、改善、ドキュメントなど
+2. ユーザーフレンドリーな言葉で書く（技術用語を避ける）
+3. 各項目は命令形の動詞で始める
+4. 破壊的変更を目立たせる
+5. 簡潔だが情報豊かに
+6. Markdown形式
+
+Markdown形式で完全なチェンジログセクションを出力してください。
+"""
+
+SYSTEM_PROMPT_CHANGELOG_ZH = """你是一位撰写美观、组织良好的变更日志的专家。
+
+规则：
+1. 按类型分组变更：新功能、错误修复、改进、文档等
+2. 使用用户友好的语言（避免技术术语）
+3. 每个条目以祈使语气的动词开头
+4. 突出显示破坏性变更
+5. 简洁但信息丰富
+6. Markdown 格式
+
+生成完整的 Markdown 格式变更日志部分。
+"""
+
+CHANGELOG_LANGUAGE_PROMPTS = {
+    "en": SYSTEM_PROMPT_CHANGELOG,
+    "ru": SYSTEM_PROMPT_CHANGELOG_RU,
+    "es": SYSTEM_PROMPT_CHANGELOG_ES,
+    "de": SYSTEM_PROMPT_CHANGELOG_DE,
+    "fr": SYSTEM_PROMPT_CHANGELOG_FR,
+    "ja": SYSTEM_PROMPT_CHANGELOG_JA,
+    "zh": SYSTEM_PROMPT_CHANGELOG_ZH,
+}
+
 CHANGELOG_TEMPLATE = """# Changelog
 
 All notable changes to this project will be documented in this file.
@@ -226,7 +302,7 @@ async def _ai_changelog(
         f"- {c['subject']} ({c['hash'][:7]})" for c in commits[:50]
     )
 
-    system_prompt = SYSTEM_PROMPT_CHANGELOG_RU if language == "ru" else SYSTEM_PROMPT_CHANGELOG
+    system_prompt = CHANGELOG_LANGUAGE_PROMPTS.get(language, CHANGELOG_LANGUAGE_PROMPTS["en"])
 
     try:
         client = AsyncOpenAI(

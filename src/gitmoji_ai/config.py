@@ -40,11 +40,6 @@ class Settings(BaseSettings):
     model_config = {"env_prefix": "GMAI_", "env_file": ".env", "extra": "ignore"}
 
     @property
-    def is_pro(self) -> bool:
-        """Check if Pro license key is set. Actual verification done in usage.py"""
-        return bool(self.pro_license_key)
-
-    @property
     def db_path(self) -> Path:
         return self.config_dir / "usage.db"
 

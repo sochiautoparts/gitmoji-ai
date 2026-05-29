@@ -58,12 +58,14 @@ Select commit [1/2/3/e(q)dit/(q)uit]: 1
 | AI changelog generation | 3/month | ∞ |
 | Conventional Commits | ✅ | ✅ |
 | Emoji commits | ✅ | ✅ |
-| Multi-language (EN, RU) | ✅ | ✅ |
+| Multi-language (7 languages) | ✅ | ✅ |
 | Git hook integration | ✅ | ✅ |
 | GitHub Action | ✅ | ✅ |
 | No watermark | ❌ | ✅ |
-| Custom commit styles | ❌ | 🔜 Coming Soon |
-| Team features | ❌ | 🔜 Coming Soon |
+| Custom commit styles | ✅ (3 styles) | ✅ (5 styles) |
+| Semantic Release style | ❌ | ✅ |
+| GitMoji Dictionary style | ❌ | ✅ |
+| Team features | ❌ | ✅ |
 | Priority support | ❌ | ✅ |
 
 ---
@@ -127,8 +129,8 @@ gmai changelog --version v1.2.0
 # Output to file
 gmai changelog --version v1.2.0 --output CHANGELOG.md
 
-# Russian language
-gmai changelog --version v1.2.0 --lang ru
+# Spanish language
+gmai changelog --version v1.2.0 --lang es
 ```
 
 ---
@@ -141,21 +143,33 @@ gmai changelog --version v1.2.0 --lang ru
 | `gmai changelog` | 📝 Generate AI changelog |
 | `gmai init` | 🔧 Initialize GitMoji AI in repo |
 | `gmai info` | 📊 Show repo info & usage stats |
+| `gmai suggest` | 💡 Quick suggest (for hooks, non-interactive) |
+| `gmai team init` | 👥 Create team config file |
+| `gmai team check` | 👥 Check commits against team rules |
+| `gmai support` | 🆘 Create a support request with debug info |
 | `gmai pro activate KEY` | ⭐ Activate Pro license |
 | `gmai pro status` | 🔍 Check Pro license status |
 | `gmai pro purchase` | 💳 Get Pro license |
+| `gmai pro login` | 🔐 Login via GitHub Sponsors |
 
 ### Commit options
 
 ```bash
-gmai commit --style emoji       # Emoji-style commits: ✨ add login
-gmai commit --style plain       # Plain: add login functionality
-gmai commit --style conventional # Conventional: feat(auth): add login (default)
-gmai commit --lang ru           # Russian: feat(auth): добавить логин
-gmai commit --stage             # Auto-stage all changes
-gmai commit --sign              # GPG-sign the commit
-gmai commit --yes               # Skip confirmation, use first suggestion
-gmai commit --path ./my-repo    # Specify repo path
+gmai commit --style conventional    # Conventional: feat(auth): add login (default)
+gmai commit --style emoji           # Emoji-style: ✨ add login
+gmai commit --style plain           # Plain: Add login functionality
+gmai commit --style semantic-release # Semantic Release: feat(api)!: change auth (Pro)
+gmai commit --style gitmoji-dict    # GitMoji Dictionary: 🌐 add Spanish translation (Pro)
+gmai commit --lang ru               # Russian: feat(auth): добавить логин
+gmai commit --lang es               # Spanish: feat(auth): añadir login
+gmai commit --lang de               # German: feat(auth): login hinzufügen
+gmai commit --lang fr               # French: feat(auth): ajouter le login
+gmai commit --lang ja               # Japanese: feat(auth): ログインを追加
+gmai commit --lang zh               # Chinese: feat(auth): 添加登录
+gmai commit --stage                 # Auto-stage all changes
+gmai commit --sign                  # GPG-sign the commit
+gmai commit --yes                   # Skip confirmation, use first suggestion
+gmai commit --path ./my-repo        # Specify repo path
 ```
 
 ### Changelog options
@@ -163,11 +177,77 @@ gmai commit --path ./my-repo    # Specify repo path
 ```bash
 gmai changelog --version v2.0.0          # Version tag
 gmai changelog --format angular          # Angular format
-gmai changelog --lang ru                 # Russian changelog
+gmai changelog --lang es                 # Spanish changelog
 gmai changelog --since v1.0.0            # Only changes since tag
 gmai changelog --no-ai                   # Manual grouping (no AI)
 gmai changelog --output CHANGELOG.md     # Write to file
 ```
+
+### Team features
+
+```bash
+# Create team config
+gmai team init
+
+# Check if recent commits comply with team rules
+gmai team check
+```
+
+The team config (`.gitmoji-ai-team.yml`) can be committed to the repo so all team members follow the same rules:
+
+```yaml
+# .gitmoji-ai-team.yml
+required_types: [feat, fix, docs, chore]   # Only these types allowed
+required_scopes: [api, ui, auth]            # Enforce scope usage
+max_subject_length: 72                       # Limit subject line
+require_scope: true                          # Scope is mandatory
+commit_style: conventional                  # Team-wide style
+language: en                                 # Team-wide language
+disallowed_types: [poo]                      # Ban certain types
+```
+
+---
+
+## 🎨 Commit Styles
+
+| Style | Format | Example | Pro Only |
+|-------|--------|---------|:--------:|
+| `conventional` | `type(scope): desc` | `feat(auth): add JWT validation` | ❌ |
+| `emoji` | `emoji desc` | `✨ add JWT validation` | ❌ |
+| `plain` | `Description` | `Add JWT validation` | ❌ |
+| `semantic-release` | `type(scope)!: desc` | `feat(api)!: change auth response` | ✅ |
+| `gitmoji-dict` | `emoji desc` | `🌐 add Spanish translation` | ✅ |
+
+### Semantic Release style (Pro)
+Follows [semantic-release](https://semantic-release.gitbook.io/) conventions:
+- `feat:` → triggers MINOR release
+- `fix:` → triggers PATCH release  
+- `feat!:` or `fix!:` → triggers MAJOR release
+- `BREAKING CHANGE:` in body
+
+### GitMoji Dictionary style (Pro)
+Uses the full [gitmoji](https://gitmoji.dev/) dictionary with 30+ specific emojis:
+- 🌐 i18n/translations
+- ♿ accessibility
+- 📈 analytics
+- 🔒 security
+- 🐳 docker
+- 💄 UI/cosmetics
+- And many more...
+
+---
+
+## 🌍 Multi-language Support
+
+| Language | Flag | Example |
+|----------|------|---------|
+| English | 🇬🇧 | `feat(auth): add login validation` |
+| Russian | 🇷🇺 | `feat(auth): добавить валидацию логина` |
+| Spanish | 🇪🇸 | `feat(auth): añadir validación de login` |
+| German | 🇩🇪 | `feat(auth): login-validierung hinzufügen` |
+| French | 🇫🇷 | `feat(auth): ajouter la validation du login` |
+| Japanese | 🇯🇵 | `feat(auth): ログイン検証を追加` |
+| Chinese | 🇨🇳 | `feat(auth): 添加登录验证` |
 
 ---
 
@@ -190,9 +270,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: sochiautoparts/gitmoji-ai/action@v1
+      - uses: sochiautoparts/gitmoji-ai@v1
         with:
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          license-key: ${{ secrets.LICENSE_KEY }}
           generate-changelog: true
           version: v1.2.0
           language: en
@@ -214,25 +295,12 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: sochiautoparts/gitmoji-ai/action@v1
+      - uses: sochiautoparts/gitmoji-ai@v1
         with:
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          license-key: ${{ secrets.LICENSE_KEY }}
           language: en
 ```
-
----
-
-## 🌍 Multi-language Support
-
-| Language | Flag | Example |
-|----------|------|---------|
-| English | 🇬🇧 | `feat(auth): add login validation` |
-| Russian | 🇷🇺 | `feat(auth): добавить валидацию логина` |
-| Spanish | 🇪🇸 | `feat(auth): añadir validación de login` |
-| German | 🇩🇪 | `feat(auth): login-validierung hinzufügen` |
-| French | 🇫🇷 | `feat(auth): ajouter la validation du login` |
-| Japanese | 🇯🇵 | `feat(auth): ログイン検証を追加` |
-| Chinese | 🇨🇳 | `feat(auth): 添加登录验证` |
 
 ---
 
@@ -242,8 +310,9 @@ jobs:
 
 - **∞ Unlimited** AI commits and changelogs
 - **No watermark** — clean commit history
-- **Custom styles** — create your own commit format
-- **Team features** — shared settings and changelogs
+- **5 commit styles** — including semantic-release and gitmoji-dict
+- **Team features** — shared settings via `.gitmoji-ai-team.yml`
+- **7 languages** — with proper native language prompts
 - **Priority support** — faster responses
 
 ### 💳 StarsPay — Pay with Telegram Stars
@@ -299,7 +368,7 @@ If the JSON method doesn't validate and `STARSPAY_API_URL` is configured, the to
 - **Header:** `X-API-Key: {STARSPAY_API_KEY}`
 - **Body:** `{"key": "<license_key>"}`
 
-The `is_pro()` function caches verification results for 1 hour in memory and also saves to local SQLite for offline use.
+The `is_pro()` function caches verification results for 1 hour in memory and also saves to local SQLite for offline use (7-day max).
 
 ### Environment Variables for CI/CD
 
@@ -309,11 +378,13 @@ For automated environments (GitHub Actions, Docker, etc.):
 LICENSE_KEY=SP-GMA-xxxxxxxx                                   # Your license key (required for Pro)
 STARSPAY_API_URL=                                              # Optional: StarsPay API URL (empty = JSON-only verification)
 STARSPAY_API_KEY=                                              # Optional: StarsPay API key (only if using API fallback)
+GITHUB_CLIENT_ID=                                              # Optional: GitHub OAuth App client ID for device flow login
 ```
 
 - **LICENSE_KEY** — Your Pro license key. If set, the tool verifies it via the public JSON file (primary) or REST API (fallback).
 - **STARSPAY_API_URL** — Optional. If set, the REST API is used as a fallback when JSON verification doesn't find the key.
 - **STARSPAY_API_KEY** — Optional. API key for the REST API (only needed if `STARSPAY_API_URL` is set).
+- **GITHUB_CLIENT_ID** — Optional. If set, enables interactive GitHub Device Flow login via `gmai pro login`.
 - If only `LICENSE_KEY` is set, verification uses the public GitHub JSON — **no API server required!**
 
 ---
@@ -327,16 +398,39 @@ Create `.env` in your project root (or set environment variables):
 GMAI_OPENAI_API_KEY=sk-your-key-here
 
 # Optional
-GMAI_DEFAULT_LANGUAGE=en          # Default commit language
-GMAI_COMMIT_STYLE=conventional    # Default commit style
+GMAI_DEFAULT_LANGUAGE=en          # Default commit language (en, ru, es, de, fr, ja, zh)
+GMAI_COMMIT_STYLE=conventional    # Default commit style (conventional, emoji, plain, semantic-release, gitmoji-dict)
 GMAI_OPENAI_MODEL=gpt-4o-mini    # AI model
-GMAI_PRO_LICENSE_KEY=             # Pro license key
 
 # StarsPay license verification
 LICENSE_KEY=                      # License key for Pro features (primary: verified via public GitHub JSON)
 STARSPAY_API_URL=                 # Optional: StarsPay API URL (empty = JSON-only verification)
 STARSPAY_API_KEY=                 # Optional: StarsPay API key
+
+# GitHub Device Flow (optional, for interactive login)
+GITHUB_CLIENT_ID=                 # GitHub OAuth App client ID
 ```
+
+### Team Configuration
+
+Create `.gitmoji-ai-team.yml` in your repo root:
+
+```yaml
+# .gitmoji-ai-team.yml — commit this file to share team conventions
+required_types: [feat, fix, docs, chore]
+required_scopes: [api, ui, auth]
+max_subject_length: 72
+require_scope: false
+disallowed_types: []
+commit_style: conventional
+language: en
+changelog_format: keepachangelog
+```
+
+When this file exists, `gmai commit` will:
+- Use team's default style and language
+- Validate commit messages against team rules
+- Warn about violations before committing
 
 ### Git Hook
 
@@ -357,14 +451,15 @@ Just uncomment the line you like, save, and close the editor!
 gitmoji-ai/
 ├── src/gitmoji_ai/
 │   ├── cli.py          # Typer CLI interface
-│   ├── ai_engine.py    # AI commit generation (OpenAI)
+│   ├── ai_engine.py    # AI commit generation (OpenAI) + 7 language prompts + 5 styles
 │   ├── git_ops.py      # Git operations (diff, commit)
-│   ├── changelog.py    # Changelog generator
+│   ├── changelog.py    # Changelog generator (7 languages)
 │   ├── config.py       # Configuration management
 │   ├── usage.py        # Usage tracking & license validation (JSON + API)
-│   └── suggest.py      # Quick suggest (for hooks)
-├── action/
-│   └── action.yml      # GitHub Action
+│   ├── suggest.py      # Quick suggest (for hooks) with rate limiting
+│   ├── sponsors.py     # GitHub Sponsors + Device Flow auth
+│   └── team.py         # Team config (.gitmoji-ai-team.yml)
+├── action.yml          # GitHub Action (canonical)
 ├── .github/workflows/
 │   ├── ci.yml          # CI pipeline
 │   └── changelog.yml   # Auto changelog

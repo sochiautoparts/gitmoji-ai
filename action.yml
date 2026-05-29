@@ -10,12 +10,16 @@ inputs:
     description: 'OpenAI API key for AI commit generation'
     required: false
     default: ''
+  license-key:
+    description: 'Pro license key for unlimited usage (optional)'
+    required: false
+    default: ''
   language:
     description: 'Commit message language (en, ru, es, de, fr, ja, zh)'
     required: false
     default: 'en'
   style:
-    description: 'Commit style: conventional, emoji, or plain'
+    description: 'Commit style: conventional, emoji, plain, semantic-release (Pro), gitmoji-dict (Pro)'
     required: false
     default: 'conventional'
   model:
@@ -54,6 +58,7 @@ runs:
         GMAI_DEFAULT_LANGUAGE: ${{ inputs.language }}
         GMAI_COMMIT_STYLE: ${{ inputs.style }}
         GMAI_OPENAI_MODEL: ${{ inputs.model }}
+        LICENSE_KEY: ${{ inputs.license-key }}
       run: |
         echo "🤖 GitMoji AI: Analyzing changes..."
         gmai info
@@ -73,6 +78,7 @@ runs:
       env:
         GMAI_OPENAI_API_KEY: ${{ inputs.openai-api-key }}
         GMAI_DEFAULT_LANGUAGE: ${{ inputs.language }}
+        LICENSE_KEY: ${{ inputs.license-key }}
       run: |
         echo "📝 Generating changelog..."
         gmai changelog --version "${{ inputs.version }}" --format "${{ inputs.changelog-format }}" --output CHANGELOG.md

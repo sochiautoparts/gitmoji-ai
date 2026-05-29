@@ -57,6 +57,11 @@ CONVENTIONAL_TYPES = [
     "test", "build", "ci", "chore", "revert"
 ]
 
+# Available commit styles: conventional, emoji, plain (free)
+# semantic-release, gitmoji-dict (Pro only)
+AVAILABLE_STYLES = ["conventional", "emoji", "plain", "semantic-release", "gitmoji-dict"]
+PRO_ONLY_STYLES = ["semantic-release", "gitmoji-dict"]
+
 
 @dataclass
 class CommitSuggestion:
@@ -139,7 +144,11 @@ def analyze_diff(diff_text: str) -> DiffAnalysis:
     )
 
 
-SYSTEM_PROMPT_COMMIT = """You are an expert at writing clear, concise, and conventional git commit messages.
+# ============================================================
+# System prompts for all 7 languages
+# ============================================================
+
+SYSTEM_PROMPT_COMMIT_EN = """You are an expert at writing clear, concise, and conventional git commit messages.
 
 Rules:
 1. Follow Conventional Commits format: type(scope): description
@@ -192,6 +201,209 @@ SYSTEM_PROMPT_COMMIT_RU = """Ты — эксперт по написанию п�
 Предложи 3 варианта: классический, с эмодзи, подробный.
 """
 
+SYSTEM_PROMPT_COMMIT_ES = """Eres un experto en escribir mensajes de commit de git claros, concisos y convencionales.
+
+Reglas:
+1. Sigue el formato Conventional Commits: tipo(ámbito): descripción
+2. Tipos: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert
+3. El ámbito es opcional pero recomendado (ejemplo: feat(auth): añadir inicio de sesión)
+4. Descripción: modo imperativo, minúsculas, sin punto, máximo 72 caracteres
+5. Cuerpo: explica POR QUÉ, no QUÉ (el diff muestra qué cambió)
+6. Sé específico, no genérico ("añadir validación de email" no "actualizar código")
+7. Si hay múltiples cambios lógicos, sugiere múltiples commits
+
+Formato de salida — arreglo JSON de sugerencias:
+[
+  {
+    "message": "tipo(ámbito): descripción",
+    "type": "feat",
+    "scope": "auth",
+    "description": "añadir validación de email al formulario de inicio de sesión",
+    "body": "Los usuarios podían enviar emails no válidos...",
+    "emoji": "✨",
+    "confidence": 0.95
+  }
+]
+
+Proporciona 3 variaciones: una convencional, una con emoji, una detallada.
+"""
+
+SYSTEM_PROMPT_COMMIT_DE = """Du bist ein Experte für das Schreiben klarer, prägnanter und konventioneller Git-Commit-Nachrichten.
+
+Regeln:
+1. Folge dem Conventional Commits Format: typ(bereich): beschreibung
+2. Typen: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert
+3. Bereich ist optional aber empfohlen (z.B. feat(auth): login hinzufügen)
+4. Beschreibung: Imperativ, Kleinschreibung, kein Punkt, max 72 Zeichen
+5. Body: erkläre WARUM, nicht WAS (der Diff zeigt was sich geändert hat)
+6. Sei spezifisch, nicht generisch ("E-Mail-Validierung hinzufügen" nicht "Code aktualisieren")
+7. Bei mehreren logischen Änderungen, schlage mehrere Commits vor
+
+Ausgabeformat — JSON-Array von Vorschlägen:
+[
+  {
+    "message": "typ(bereich): beschreibung",
+    "type": "feat",
+    "scope": "auth",
+    "description": "E-Mail-Validierung zum Login-Formular hinzufügen",
+    "body": "Benutzer konnten ungültige E-Mails senden...",
+    "emoji": "✨",
+    "confidence": 0.95
+  }
+]
+
+Biete 3 Varianten: eine konventionelle, eine mit Emoji, eine detaillierte.
+"""
+
+SYSTEM_PROMPT_COMMIT_FR = """Vous êtes un expert en rédaction de messages de commit git clairs, concis et conventionnels.
+
+Règles :
+1. Suivez le format Conventional Commits : type(portée) : description
+2. Types : feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert
+3. La portée est facultative mais recommandée (ex : feat(auth) : ajouter connexion)
+4. Description : mode impératif, minuscules, sans point, max 72 caractères
+5. Corps : expliquez POURQUOI, pas QUOI (le diff montre ce qui a changé)
+6. Soyez spécifique, pas générique ("ajouter la validation email" pas "mettre à jour le code")
+7. S'il y a plusieurs changements logiques, suggérez plusieurs commits
+
+Format de sortie — tableau JSON de suggestions :
+[
+  {
+    "message": "type(portée) : description",
+    "type": "feat",
+    "scope": "auth",
+    "description": "ajouter la validation email au formulaire de connexion",
+    "body": "Les utilisateurs pouvaient soumettre des emails invalides...",
+    "emoji": "✨",
+    "confidence": 0.95
+  }
+]
+
+Proposez 3 variantes : une conventionnelle, une avec emoji, une détaillée.
+"""
+
+SYSTEM_PROMPT_COMMIT_JA = """あなたは明確で簡潔な conventional な git コミットメッセージを書くエキスパートです。
+
+ルール:
+1. Conventional Commits フォーマットに従う: type(scope): description
+2. タイプ: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert
+3. スコープはオプションですが推奨されます (例: feat(auth): ログインを追加)
+4. 説明: 命令形、小文字、ピリオドなし、最大72文字
+5. 本文: なぜ（WHY）を説明、何（WHAT）は不要（diffに表示されます）
+6. 具体的に書く（「コードを更新」ではなく「メールバリデーションを追加」）
+7. 複数の論理的変更がある場合は、複数のコミットを提案
+
+出力形式 — 提案のJSON配列:
+[
+  {
+    "message": "type(scope): description",
+    "type": "feat",
+    "scope": "auth",
+    "description": "ログインフォームにメールバリデーションを追加",
+    "body": "ユーザーが無効なメールを送信できていました...",
+    "emoji": "✨",
+    "confidence": 0.95
+  }
+]
+
+3つのバリエーションを提供：従来型、絵文字付き、詳細版。
+"""
+
+SYSTEM_PROMPT_COMMIT_ZH = """你是一位撰写清晰、简洁、规范化 git 提交消息的专家。
+
+规则：
+1. 遵循 Conventional Commits 格式：type(scope): description
+2. 类型：feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert
+3. scope 是可选的但建议使用（例如：feat(auth): 添加登录）
+4. 描述：祈使语气，不加句号，最多72个字符
+5. 正文：解释为什么（WHY），而不是什么（WHAT）（diff 已经显示了变更内容）
+6. 要具体，不要笼统（"添加邮箱验证" 而不是 "更新代码"）
+7. 如果有多个逻辑变更，建议多个提交
+
+输出格式 — 建议的 JSON 数组：
+[
+  {
+    "message": "type(scope): description",
+    "type": "feat",
+    "scope": "auth",
+    "description": "在登录表单中添加邮箱验证",
+    "body": "用户之前可以提交无效的邮箱地址...",
+    "emoji": "✨",
+    "confidence": 0.95
+  }
+]
+
+提供3个变体：规范型、emoji型、详细型。
+"""
+
+# Language → system prompt mapping
+LANGUAGE_PROMPTS = {
+    "en": SYSTEM_PROMPT_COMMIT_EN,
+    "ru": SYSTEM_PROMPT_COMMIT_RU,
+    "es": SYSTEM_PROMPT_COMMIT_ES,
+    "de": SYSTEM_PROMPT_COMMIT_DE,
+    "fr": SYSTEM_PROMPT_COMMIT_FR,
+    "ja": SYSTEM_PROMPT_COMMIT_JA,
+    "zh": SYSTEM_PROMPT_COMMIT_ZH,
+}
+
+# ============================================================
+# Commit style profiles (appended to the base language prompt)
+# ============================================================
+
+STYLE_PROMPTS = {
+    "conventional": "",  # Default — uses the base language prompt as-is
+    "emoji": """
+
+ADDITIONAL STYLE RULE — Emoji style:
+- Start the commit message with the appropriate gitmoji emoji
+- Format: emoji description (no type prefix)
+- Example: ✨ add email validation to login form
+- Example: 🐛 fix crash on startup when config is missing""",
+    "plain": """
+
+ADDITIONAL STYLE RULE — Plain style:
+- No type prefix, no emoji, just a clear description
+- Use imperative mood, capitalize first letter
+- Example: Add email validation to login form
+- Example: Fix crash on startup when config is missing""",
+    "semantic-release": """
+
+ADDITIONAL STYLE RULE — Semantic Release style (Pro only):
+- Follow semantic-release conventions strictly
+- Use feat: for features (triggers MINOR release)
+- Use fix: for bug fixes (triggers PATCH release)
+- Use feat!: or fix!: for breaking changes (triggers MAJOR release)
+- Include BREAKING CHANGE: in body for breaking changes
+- Always include scope when possible
+- Example: feat(api)!: change authentication endpoint response format
+- Body must include: BREAKING CHANGE: The /auth endpoint now returns JWT instead of session token""",
+    "gitmoji-dict": """
+
+ADDITIONAL STYLE RULE — GitMoji Dictionary style (Pro only):
+- Use the full gitmoji dictionary with detailed emoji selection
+- Each commit MUST start with the most specific gitmoji from this extended list:
+  ✨ feat, 🐛 fix, 📚 docs, 💎 style, ♻️ refactor, ⚡ perf, ✅ test,
+  📦 build, 👷 ci, 🔧 chore, ⏪ revert, 🔒 security, 🌐 i18n,
+  ♿ accessibility, 📈 analytics, ➕ add dependency, ➖ remove dependency,
+  🐳 docker, 💄 ui/cosmetics, 🎉 initial commit, 🚧 wip,
+  ⚰️ remove dead code, 📝 add/update license, 💥 introduce breaking changes,
+  🧪 add failing test, ✏️ fix typo, 🔀 merge branch, 🛂 auth/permissions,
+  🔌 add/update API, 🔊 add/update logs, 🗃️ add/update database,
+  🧹 code cleanup, 💩 write bad code that needs refactoring
+- Format: emoji description
+- Example: 🌐 add Spanish translation for login page
+- Example: ♿ improve keyboard navigation in modal dialog
+- Example: 📈 add analytics tracking for user onboarding flow""",
+}
+
+
+def get_system_prompt(language: str, style: str) -> str:
+    """Get the combined system prompt for a given language and style."""
+    base = LANGUAGE_PROMPTS.get(language, LANGUAGE_PROMPTS["en"])
+    style_addon = STYLE_PROMPTS.get(style, "")
+    return base + style_addon
+
 
 async def generate_commit_messages(
     diff_text: str,
@@ -202,6 +414,13 @@ async def generate_commit_messages(
     """Generate AI-powered commit message suggestions from a git diff"""
     settings = get_settings()
 
+    # Check if style requires Pro
+    if style in PRO_ONLY_STYLES:
+        from gitmoji_ai.usage import is_pro
+        if not is_pro():
+            logger.warning(f"Style '{style}' requires Pro. Falling back to 'conventional'.")
+            style = "conventional"
+
     if not settings.openai_api_key:
         return _fallback_commit_messages(diff_text, style)
 
@@ -210,7 +429,7 @@ async def generate_commit_messages(
     if len(diff_text) > max_chars:
         diff_text = diff_text[:max_chars] + "\n\n... (diff truncated)"
 
-    system_prompt = SYSTEM_PROMPT_COMMIT_RU if language == "ru" else SYSTEM_PROMPT_COMMIT
+    system_prompt = get_system_prompt(language, style)
 
     user_prompt = f"""Generate commit messages for this diff:
 
@@ -322,6 +541,12 @@ def _fallback_commit_messages(diff_text: str, style: str) -> list[CommitSuggesti
         message = f"{emoji} {analysis.summary}"
     elif style == "plain":
         message = analysis.summary.capitalize()
+    elif style == "semantic-release":
+        # Fallback for semantic-release — same as conventional but with breaking change note
+        message = f"{msg_type}: {analysis.summary}"
+    elif style == "gitmoji-dict":
+        # Fallback for gitmoji-dict — same as emoji
+        message = f"{emoji} {analysis.summary}"
     else:
         message = f"{msg_type}: {analysis.summary}"
 

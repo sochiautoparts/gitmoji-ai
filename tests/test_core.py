@@ -1,8 +1,16 @@
 """Tests for GitMoji AI"""
 
 import pytest
-from gitmoji_ai.ai_engine import analyze_diff, _fallback_commit_messages, GITMOJI_MAP
+from gitmoji_ai.ai_engine import (
+    analyze_diff, _fallback_commit_messages, GITMOJI_MAP,
+    CONVENTIONAL_TYPES, LANGUAGE_PROMPTS, STYLE_PROMPTS,
+    AVAILABLE_STYLES, PRO_ONLY_STYLES, get_system_prompt,
+)
 from gitmoji_ai.changelog import parse_commit_subject, group_commits_by_type
+from gitmoji_ai.team import (
+    TeamConfig, validate_commit_against_team,
+    TEAM_CONFIG_FILENAME, DEFAULT_TEAM_CONFIG,
+)
 
 
 class TestDiffAnalysis:
@@ -112,6 +120,18 @@ new file mode 100644
         suggestions = _fallback_commit_messages("new file mode\n+feature", "emoji")
         assert any(e in suggestions[0].message for e in GITMOJI_MAP.values())
 
+    def test_plain_style(self):
+        suggestions = _fallback_commit_messages("new file mode\n+feature", "plain")
+        assert suggestions[0].message[0].isupper()
+
+    def test_semantic_release_style(self):
+        suggestions = _fallback_commit_messages("new file mode\n+feature", "semantic-release")
+        assert len(suggestions) >= 1
+
+    def test_gitmoji_dict_style(self):
+        suggestions = _fallback_commit_messages("new file mode\n+feature", "gitmoji-dict")
+        assert len(suggestions) >= 1
+
     def test_empty_diff_fallback(self):
         suggestions = _fallback_commit_messages("", "conventional")
         assert len(suggestions) >= 1
@@ -140,10 +160,154 @@ class TestGitmojiMap:
     """Test GitMoji emoji mapping"""
 
     def test_all_conventional_types_have_emoji(self):
-        from gitmoji_ai.ai_engine import CONVENTIONAL_TYPES
         for t in CONVENTIONAL_TYPES:
             assert t in GITMOJI_MAP, f"Missing emoji for type: {t}"
 
     def test_emoji_are_unicode(self):
         for key, emoji in GITMOJI_MAP.items():
             assert len(emoji) >= 1, f"Empty emoji for {key}"
+
+
+class TestLanguagePrompts:
+    """Test all 7 language prompts exist"""
+
+    def test_all_languages_have_prompts(self):
+        for lang in ["en", "ru", "es", "de", "fr", "ja", "zh"]:
+            assert lang in LANGUAGE_PROMPTS, f"Missing prompt for language: {lang}"
+
+    def test_prompts_are_nonempty(self):
+        for lang, prompt in LANGUAGE_PROMPTS.items():
+            assert len(prompt) > 100, f"Prompt too short for language: {lang}"
+
+    def test_get_system_prompt_default(self):
+        prompt = get_system_prompt("en", "conventional")
+        assert "Conventional Commits" in prompt
+
+    def test_get_system_prompt_unknown_language(self):
+        prompt = get_system_prompt("xx", "conventional")
+        # Should fall back to English
+        assert "Conventional Commits" in prompt
+
+    def test_get_system_prompt_with_style(self):
+        prompt = get_system_prompt("en", "emoji")
+        assert "Emoji style" in prompt
+
+    def test_get_system_prompt_semantic_release(self):
+        prompt = get_system_prompt("en", "semantic-release")
+        assert "Semantic Release" in prompt
+
+    def test_get_system_prompt_gitmoji_dict(self):
+        prompt = get_system_prompt("en", "gitmoji-dict")
+        assert "GitMoji Dictionary" in prompt
+
+
+class TestCommitStyles:
+    """Test commit style profiles"""
+
+    def test_all_styles_have_prompts(self):
+        for style in AVAILABLE_STYLES:
+            assert style in STYLE_PROMPTS, f"Missing style prompt for: {style}"
+
+    def test_pro_only_styles(self):
+        assert "semantic-release" in PRO_ONLY_STYLES
+        assert "gitmoji-dict" in PRO_ONLY_STYLES
+        assert "conventional" not in PRO_ONLY_STYLES
+        assert "emoji" not in PRO_ONLY_STYLES
+        assert "plain" not in PRO_ONLY_STYLES
+
+    def test_available_styles_list(self):
+        assert "conventional" in AVAILABLE_STYLES
+        assert "emoji" in AVAILABLE_STYLES
+        assert "plain" in AVAILABLE_STYLES
+        assert "semantic-release" in AVAILABLE_STYLES
+        assert "gitmoji-dict" in AVAILABLE_STYLES
+
+
+class TestTeamConfig:
+    """Test team configuration"""
+
+    def test_default_team_config(self):
+        config = TeamConfig()
+        assert config.commit_style == "conventional"
+        assert config.language == "en"
+        assert config.max_subject_length == 72
+        assert config.require_scope is False
+        assert config.required_types == []
+        assert config.required_scopes == []
+        assert config.disallowed_types == []
+
+    def test_validate_commit_no_rules(self):
+        config = TeamConfig()
+        violations = validate_commit_against_team("feat(auth): add login", config)
+        assert len(violations) == 0
+
+    def test_validate_commit_required_types(self):
+        config = TeamConfig(required_types=["feat", "fix"])
+        violations = validate_commit_against_team("chore: update config", config)
+        assert len(violations) == 1
+        assert "not allowed" in violations[0]
+
+    def test_validate_commit_required_types_valid(self):
+        config = TeamConfig(required_types=["feat", "fix"])
+        violations = validate_commit_against_team("feat: add login", config)
+        assert len(violations) == 0
+
+    def test_validate_commit_disallowed_types(self):
+        config = TeamConfig(disallowed_types=["poo"])
+        violations = validate_commit_against_team("poo: bad code", config)
+        assert len(violations) == 1
+        assert "disallowed" in violations[0]
+
+    def test_validate_commit_require_scope(self):
+        config = TeamConfig(require_scope=True)
+        violations = validate_commit_against_team("feat: add login", config)
+        assert len(violations) == 1
+        assert "Scope is required" in violations[0]
+
+    def test_validate_commit_require_scope_with_scope(self):
+        config = TeamConfig(require_scope=True)
+        violations = validate_commit_against_team("feat(auth): add login", config)
+        assert len(violations) == 0
+
+    def test_validate_commit_required_scopes(self):
+        config = TeamConfig(required_scopes=["api", "ui"])
+        violations = validate_commit_against_team("feat(auth): add login", config)
+        assert len(violations) == 1
+        assert "not allowed" in violations[0]
+
+    def test_validate_commit_required_scopes_valid(self):
+        config = TeamConfig(required_scopes=["api", "ui"])
+        violations = validate_commit_against_team("feat(api): add endpoint", config)
+        assert len(violations) == 0
+
+    def test_validate_commit_subject_too_long(self):
+        config = TeamConfig(max_subject_length=20)
+        violations = validate_commit_against_team("feat(auth): this is a very long description that exceeds the limit", config)
+        assert len(violations) == 1
+        assert "too long" in violations[0]
+
+    def test_validate_commit_custom_type_alias(self):
+        config = TeamConfig(required_types=["feat"], custom_types={"feature": "feat"})
+        violations = validate_commit_against_team("feature: add login", config)
+        assert len(violations) == 0
+
+    def test_team_config_filename(self):
+        assert TEAM_CONFIG_FILENAME == ".gitmoji-ai-team.yml"
+
+    def test_default_team_config_has_yaml(self):
+        assert "required_types:" in DEFAULT_TEAM_CONFIG
+        assert "required_scopes:" in DEFAULT_TEAM_CONFIG
+        assert "commit_style:" in DEFAULT_TEAM_CONFIG
+
+
+class TestConfigSecurity:
+    """Test that is_pro property was removed from Settings"""
+
+    def test_settings_has_no_is_pro_property(self):
+        from gitmoji_ai.config import Settings
+        s = Settings()
+        assert not hasattr(s, 'is_pro'), "Settings should NOT have is_pro property — use is_pro() from usage.py"
+
+    def test_is_pro_is_function(self):
+        from gitmoji_ai.usage import is_pro
+        assert callable(is_pro), "is_pro should be a function, not a property"
