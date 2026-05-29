@@ -255,10 +255,9 @@ Purchase directly in Telegram — pay with Stars, get your license key in second
 | Plan | Price | Best for |
 |------|-------|----------|
 | **Free** | $0 | Personal projects |
-| **Pro** | ⭐ 500/month (~$5) | Professional developers |
-| **Pro Year** | ⭐ 4,500/year (~$45) | Best value — save 25% |
-| **Team** | ⭐ 2,000/month (~$20) | Teams & organizations |
-| **Lifetime** | ⭐ 5,000 (~$50) | Pay once, use forever |
+| **1 месяц** | ⭐ 149/month | Try Pro features |
+| **1 год** | ⭐ 999/year | Best value — save 44% |
+| **Навсегда** | ⭐ 2,999 | Pay once, use forever |
 
 **3 steps to Pro:**
 
